@@ -1,6 +1,6 @@
 # ajuda_idoso
 
-A new Flutter project.
+Um projeto desenvolvido em Dart/Flutter. Um app de auxílio para ajudar pessoas da terceira idade a lidarem com a tecnologia.
 
 ## Getting Started
 

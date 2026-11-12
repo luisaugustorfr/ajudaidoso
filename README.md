@@ -1,16 +1,5 @@
 # ajuda_idoso
 
-Um projeto desenvolvido em Dart/Flutter. Um app de auxílio para ajudar pessoas da terceira idade a lidarem com a tecnologia.
+Amparo é um projeto desenvolvido em Dart/Flutter. Um app de auxílio para ajudar pessoas da terceira idade a lidarem com a tecnologia. 
+Projeto desenvolvido por alunos da cadeira de Projeto Integrador do curso de Tecnologia em Telemática no IFCE.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

@@ -12,3 +12,9 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+# Android build artifacts
+/android/build/
+
+# Temporary or accidental lock file
+/pec.lock
+/android/build/

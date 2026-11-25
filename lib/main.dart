@@ -18,6 +18,7 @@ class AmparoApp extends StatefulWidget {
 class _AmparoAppState extends State<AmparoApp> {
   bool isDarkMode = false;
   bool isHighContrast = false;
+  double textScaleFactor = 1.0;
   bool? introAlreadySeen;
 
   final SharedPreferencesAsync preferences = SharedPreferencesAsync();
@@ -85,11 +86,20 @@ class _AmparoAppState extends State<AmparoApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Amparo',
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final systemTextScale = mediaQuery.textScaler.scale(1.0);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(systemTextScale * textScaleFactor),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       theme: buildAppTheme(dark: false, highContrast: isHighContrast),
       darkTheme: buildAppTheme(dark: true, highContrast: isHighContrast),
-      themeMode: isDarkMode || isHighContrast
-          ? ThemeMode.dark
-          : ThemeMode.light,
+      themeMode:
+          isDarkMode || isHighContrast ? ThemeMode.dark : ThemeMode.light,
       home: introAlreadySeen == null
           ? const _InitialLoadingScreen()
           : introAlreadySeen == false
@@ -97,6 +107,12 @@ class _AmparoAppState extends State<AmparoApp> {
               : HomePage(
                   isDarkMode: isDarkMode,
                   isHighContrast: isHighContrast,
+                  textScaleFactor: textScaleFactor,
+                  onTextScaleChanged: (value) {
+                    setState(() {
+                      textScaleFactor = value.clamp(1.0, 1.6).toDouble();
+                    });
+                  },
                   onToggleDarkMode: () {
                     setState(() {
                       isDarkMode = !isDarkMode;
@@ -292,7 +308,8 @@ class TrustedSite {
 const List<DigitalGuide> documents = [
   DigitalGuide(
     title: 'Como entrar no gov.br',
-    description: 'Aprenda a acessar sua conta e os serviços digitais do governo.',
+    description:
+        'Aprenda a acessar sua conta e os serviços digitais do governo.',
     category: 'Serviços públicos',
     fileName: '01-como-entrar-no-gov-br.pdf',
     icon: Icons.account_circle_outlined,
@@ -327,7 +344,8 @@ const List<DigitalGuide> documents = [
   ),
   DigitalGuide(
     title: 'Transporte e mapas no celular',
-    description: 'Aprenda a consultar trajetos e usar aplicativos de transporte.',
+    description:
+        'Aprenda a consultar trajetos e usar aplicativos de transporte.',
     category: 'Transporte',
     fileName: 'Aplicaes 3_ Transporte e Mapas no Celular.pdf',
     icon: Icons.map_outlined,
@@ -474,7 +492,8 @@ const List<DigitalGuide> documents = [
   ),
   DigitalGuide(
     title: 'Segurança digital',
-    description: 'Práticas para navegar e utilizar serviços com mais segurança.',
+    description:
+        'Práticas para navegar e utilizar serviços com mais segurança.',
     category: 'Segurança digital',
     fileName: 'Seguranca_Digital.pdf',
     icon: Icons.shield_outlined,
@@ -497,14 +516,16 @@ const List<DigitalGuide> documents = [
     title: 'Ajustando letras, som e tela',
     description: 'Personalize o aparelho para enxergar e ouvir melhor.',
     category: 'Cuidados com o celular',
-    fileName: 'Utilidades 1_ Ajustando Letras, Som e Tela para seu Conforto.pdf',
+    fileName:
+        'Utilidades 1_ Ajustando Letras, Som e Tela para seu Conforto.pdf',
     icon: Icons.text_fields,
   ),
   DigitalGuide(
     title: 'Ferramentas do dia a dia',
     description: 'Use alarme, lanterna, câmera e leitor de QR Code.',
     category: 'Utilidades',
-    fileName: 'Utilidades 2_ Ferramentas do Dia a Dia (Alarme, Lanterna, Cmera e QR Code).pdf',
+    fileName:
+        'Utilidades 2_ Ferramentas do Dia a Dia (Alarme, Lanterna, Cmera e QR Code).pdf',
     icon: Icons.build_outlined,
   ),
   DigitalGuide(
@@ -517,47 +538,255 @@ const List<DigitalGuide> documents = [
 ];
 
 const List<TrustedSite> trustedSites = [
-  TrustedSite(name: 'Meu INSS', description: 'Pedir aposentadoria, ver extrato, consultar pedidos e fazer a prova de vida.', url: 'https://meu.inss.gov.br', category: 'Aposentadoria e INSS', phone: '135 (ligação gratuita)', icon: Icons.account_balance),
-  TrustedSite(name: 'Site do INSS', description: 'Informações, cartilhas e notícias sobre benefícios.', url: 'https://www.gov.br/inss', category: 'Aposentadoria e INSS', icon: Icons.account_balance_outlined),
-  TrustedSite(name: 'Simular aposentadoria', description: 'Veja quanto tempo falta e uma estimativa do valor. É apenas uma simulação.', url: 'https://www.gov.br/pt-br/servicos/simular-aposentadoria', category: 'Aposentadoria e INSS', icon: Icons.calculate_outlined),
-  TrustedSite(name: 'BPC / LOAS para idosos', description: 'Um salário mínimo por mês para quem tem 65 anos ou mais e renda familiar muito baixa.', url: 'https://www.gov.br/pt-br/servicos/solicitar-beneficio-assistencial-ao-idoso', category: 'Aposentadoria e INSS', phone: '135', icon: Icons.elderly),
-  TrustedSite(name: 'Cadastro Único (CadÚnico)', description: 'Porta de entrada para programas como Bolsa Família, BPC e tarifa social de energia. Atualize os dados no CRAS.', url: 'https://www.gov.br/mds/pt-br/acoes-e-programas/cadastro-unico', category: 'Assistência social e CadÚnico', icon: Icons.assignment_outlined),
-  TrustedSite(name: 'Consulta do CadÚnico', description: 'Consulte se sua família está cadastrada.', url: 'https://cadunico.dataprev.gov.br', category: 'Assistência social e CadÚnico', icon: Icons.search),
-  TrustedSite(name: 'Carteira da Pessoa Idosa', description: 'Documento que garante benefícios como gratuidade ou desconto no transporte interestadual, para quem tem CadÚnico.', url: 'https://carteiraidoso.cidadania.gov.br', category: 'Assistência social e CadÚnico', phone: '121 (Disque Social)', icon: Icons.card_membership_outlined),
-  TrustedSite(name: 'Mapa Social: encontre o CRAS', description: 'Descubra qual é o CRAS mais próximo da sua casa.', url: 'https://mapa-social.mds.gov.br', category: 'Assistência social e CadÚnico', icon: Icons.map_outlined),
-  TrustedSite(name: 'Bolsa Família', description: 'Informações sobre o programa de transferência de renda.', url: 'https://www.gov.br/mds/pt-br/acoes-e-programas/bolsa-familia', category: 'Assistência social e CadÚnico', icon: Icons.family_restroom),
-  TrustedSite(name: 'Gás do Povo', description: 'Ajuda para comprar o gás de cozinha, para famílias de baixa renda do CadÚnico.', url: 'https://www.gov.br/gasdopovo', category: 'Assistência social e CadÚnico', icon: Icons.local_fire_department_outlined),
-  TrustedSite(name: 'Farmácia Popular', description: 'Remédios e itens gratuitos, como alguns medicamentos de uso contínuo. Procure o selo “Aqui tem Farmácia Popular”.', url: 'https://www.gov.br/farmaciapopular', category: 'Saúde', icon: Icons.local_pharmacy_outlined),
-  TrustedSite(name: 'Meu SUS Digital', description: 'Seu histórico de saúde, vacinas e autorização para retirar remédios na Farmácia Popular.', url: 'https://meususdigital.saude.gov.br', category: 'Saúde', icon: Icons.health_and_safety_outlined),
-  TrustedSite(name: 'Serviços do SUS para a pessoa idosa', description: 'Cartilha do Ministério da Saúde com os serviços disponíveis.', url: 'https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/cartazes-e-cartilhas/servicos-do-sus-para-pessoa-idosa.pdf', category: 'Saúde', icon: Icons.menu_book_outlined),
-  TrustedSite(name: 'Ministério da Saúde e Ouvidoria do SUS', description: 'Para reclamar, elogiar ou pedir informações sobre o atendimento de saúde. No site, procure “Canais de Atendimento”.', url: 'https://www.gov.br/saude/pt-br', category: 'Saúde', phone: '136', icon: Icons.health_and_safety),
-  TrustedSite(name: 'Disque 100: denúncia de violência', description: 'Para denunciar maus-tratos, abandono ou violência contra pessoa idosa. A ligação é gratuita e não é preciso se identificar.', url: 'https://www.gov.br/mdh/pt-br/servicos/denunciar-violacao-de-direitos-humanos-disque-100', category: 'Direitos, denúncias e lazer', phone: '100', icon: Icons.report_gmailerrorred_outlined),
-  TrustedSite(name: 'Direitos da Pessoa Idosa', description: 'Área do Ministério dos Direitos Humanos com informações e publicações.', url: 'https://www.gov.br/mdh/pt-br/navegue-por-temas/pessoa-idosa', category: 'Direitos, denúncias e lazer', icon: Icons.gavel_outlined),
-  TrustedSite(name: 'Estatuto da Pessoa Idosa', description: 'Texto oficial da lei que garante os direitos de quem tem 60 anos ou mais.', url: 'https://www.gov.br/participamaisbrasil/blob/baixar/71910', category: 'Direitos, denúncias e lazer', icon: Icons.menu_book),
-  TrustedSite(name: 'Voa Brasil', description: 'Passagens aéreas de até R\$ 200 por trecho para aposentados do INSS. Exige conta gov.br nível prata ou ouro.', url: 'https://www.gov.br/voabrasil', category: 'Direitos, denúncias e lazer', icon: Icons.flight_outlined),
-  TrustedSite(name: 'Fala.BR: ouvidoria do governo', description: 'Registre reclamações, sugestões ou denúncias sobre serviços públicos federais.', url: 'https://falabr.cgu.gov.br', category: 'Direitos, denúncias e lazer', icon: Icons.record_voice_over_outlined),
-  TrustedSite(name: 'Portal gov.br', description: 'Entrada para todos os serviços do governo e para a sua conta gov.br.', url: 'https://www.gov.br', category: 'Direitos, denúncias e lazer', icon: Icons.account_balance_outlined),
-  TrustedSite(name: 'Amazon Brasil', description: 'Loja online. Em caso de problema, use a Central de Atendimento dentro do site.', url: 'https://www.amazon.com.br', category: 'Compras e transporte por aplicativo', icon: Icons.shopping_bag_outlined),
-  TrustedSite(name: 'Mercado Livre', description: 'Loja online e marketplace. Compre de vendedores bem avaliados.', url: 'https://www.mercadolivre.com.br', category: 'Compras e transporte por aplicativo', icon: Icons.storefront_outlined),
-  TrustedSite(name: 'Uber: central de ajuda', description: 'Ajuda para corridas, pagamentos e segurança.', url: 'https://help.uber.com/pt-BR', category: 'Compras e transporte por aplicativo', icon: Icons.local_taxi_outlined),
-  TrustedSite(name: '99 (inclui 99Pop)', description: 'Aplicativo de corridas.', url: 'https://99app.com', category: 'Compras e transporte por aplicativo', icon: Icons.directions_car_outlined),
-  TrustedSite(name: '99: central de ajuda', description: 'Atendimento 24 horas, todos os dias.', url: 'https://99app.com/ajuda/', category: 'Compras e transporte por aplicativo', icon: Icons.support_agent_outlined),
-  TrustedSite(name: 'Agência Brasil', description: 'Agência pública de notícias (EBC).', url: 'https://agenciabrasil.ebc.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper_outlined),
-  TrustedSite(name: 'Agência Gov', description: 'Notícias do Governo Federal.', url: 'https://agenciagov.ebc.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.account_balance_outlined),
-  TrustedSite(name: 'Senado Notícias', description: 'Notícias do Senado Federal.', url: 'https://www12.senado.leg.br/noticias', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.account_balance_outlined),
-  TrustedSite(name: 'Agência Câmara', description: 'Notícias da Câmara dos Deputados.', url: 'https://www.camara.leg.br/noticias', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.account_balance_outlined),
-  TrustedSite(name: 'g1', description: 'Portal de notícias do Grupo Globo.', url: 'https://g1.globo.com', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'Folha de S.Paulo', description: 'Jornal.', url: 'https://www.folha.uol.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'O Estado de S. Paulo', description: 'Jornal.', url: 'https://www.estadao.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'O Globo', description: 'Jornal.', url: 'https://oglobo.globo.com', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'CNN Brasil', description: 'Canal e portal de notícias.', url: 'https://www.cnnbrasil.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'Correio Braziliense', description: 'Jornal de Brasília.', url: 'https://www.correiobraziliense.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
-  TrustedSite(name: 'O Povo', description: 'Jornal do Ceará.', url: 'https://www.opovo.com.br', category: 'Notícias de fontes oficiais e conhecidas', icon: Icons.newspaper),
+  TrustedSite(
+      name: 'Meu INSS',
+      description:
+          'Pedir aposentadoria, ver extrato, consultar pedidos e fazer a prova de vida.',
+      url: 'https://meu.inss.gov.br',
+      category: 'Aposentadoria e INSS',
+      phone: '135 (ligação gratuita)',
+      icon: Icons.account_balance),
+  TrustedSite(
+      name: 'Site do INSS',
+      description: 'Informações, cartilhas e notícias sobre benefícios.',
+      url: 'https://www.gov.br/inss',
+      category: 'Aposentadoria e INSS',
+      icon: Icons.account_balance_outlined),
+  TrustedSite(
+      name: 'Simular aposentadoria',
+      description:
+          'Veja quanto tempo falta e uma estimativa do valor. É apenas uma simulação.',
+      url: 'https://www.gov.br/pt-br/servicos/simular-aposentadoria',
+      category: 'Aposentadoria e INSS',
+      icon: Icons.calculate_outlined),
+  TrustedSite(
+      name: 'BPC / LOAS',
+      description:
+          'Um salário mínimo por mês para quem tem 65 anos ou mais e renda familiar muito baixa.',
+      url:
+          'https://www.gov.br/pt-br/servicos/solicitar-beneficio-assistencial-ao-idoso',
+      category: 'Aposentadoria e INSS',
+      phone: '135',
+      icon: Icons.elderly),
+  TrustedSite(
+      name: 'Cadastro Único (CadÚnico)',
+      description:
+          'Porta de entrada para programas como Bolsa Família, BPC e tarifa social de energia. Atualize os dados no CRAS.',
+      url: 'https://www.gov.br/mds/pt-br/acoes-e-programas/cadastro-unico',
+      category: 'Assistência social e CadÚnico',
+      icon: Icons.assignment_outlined),
+  TrustedSite(
+      name: 'Consulta do CadÚnico',
+      description: 'Consulte se sua família está cadastrada.',
+      url: 'https://cadunico.dataprev.gov.br',
+      category: 'Assistência social e CadÚnico',
+      icon: Icons.search),
+  TrustedSite(
+      name: 'Carteira da Pessoa Idosa',
+      description:
+          'Documento que garante benefícios como gratuidade ou desconto no transporte interestadual, para quem tem CadÚnico.',
+      url: 'https://carteiraidoso.cidadania.gov.br',
+      category: 'Assistência social e CadÚnico',
+      phone: '121 (Disque Social)',
+      icon: Icons.card_membership_outlined),
+  TrustedSite(
+      name: 'Mapa Social: encontre o CRAS',
+      description: 'Descubra qual é o CRAS mais próximo da sua casa.',
+      url: 'https://mapa-social.mds.gov.br',
+      category: 'Assistência social e CadÚnico',
+      icon: Icons.map_outlined),
+  TrustedSite(
+      name: 'Bolsa Família',
+      description: 'Informações sobre o programa de transferência de renda.',
+      url: 'https://www.gov.br/mds/pt-br/acoes-e-programas/bolsa-familia',
+      category: 'Assistência social e CadÚnico',
+      icon: Icons.family_restroom),
+  TrustedSite(
+      name: 'Gás do Povo',
+      description:
+          'Ajuda para comprar o gás de cozinha, para famílias de baixa renda do CadÚnico.',
+      url: 'https://www.gov.br/gasdopovo',
+      category: 'Assistência social e CadÚnico',
+      icon: Icons.local_fire_department_outlined),
+  TrustedSite(
+      name: 'Farmácia Popular',
+      description:
+          'Remédios e itens gratuitos, como alguns medicamentos de uso contínuo. Procure o selo “Aqui tem Farmácia Popular”.',
+      url: 'https://www.gov.br/farmaciapopular',
+      category: 'Saúde',
+      icon: Icons.local_pharmacy_outlined),
+  TrustedSite(
+      name: 'Meu SUS Digital',
+      description:
+          'Seu histórico de saúde, vacinas e autorização para retirar remédios na Farmácia Popular.',
+      url: 'https://meususdigital.saude.gov.br',
+      category: 'Saúde',
+      icon: Icons.health_and_safety_outlined),
+  TrustedSite(
+      name: 'Serviços do SUS',
+      description:
+          'Cartilha do Ministério da Saúde com orientações e serviços disponíveis.',
+      url:
+          'https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/cartazes-e-cartilhas/servicos-do-sus-para-pessoa-idosa.pdf',
+      category: 'Saúde',
+      icon: Icons.menu_book_outlined),
+  TrustedSite(
+      name: 'Ministério da Saúde e Ouvidoria do SUS',
+      description:
+          'Para reclamar, elogiar ou pedir informações sobre o atendimento de saúde. No site, procure “Canais de Atendimento”.',
+      url: 'https://www.gov.br/saude/pt-br',
+      category: 'Saúde',
+      phone: '136',
+      icon: Icons.health_and_safety),
+  TrustedSite(
+      name: 'Disque 100: denúncia de violência',
+      description:
+          'Para denunciar maus-tratos, abandono ou violência contra pessoa idosa. A ligação é gratuita e não é preciso se identificar.',
+      url:
+          'https://www.gov.br/mdh/pt-br/servicos/denunciar-violacao-de-direitos-humanos-disque-100',
+      category: 'Direitos, denúncias e lazer',
+      phone: '100',
+      icon: Icons.report_gmailerrorred_outlined),
+  TrustedSite(
+      name: 'Direitos da Pessoa Idosa',
+      description:
+          'Área do Ministério dos Direitos Humanos com informações e publicações.',
+      url: 'https://www.gov.br/mdh/pt-br/navegue-por-temas/pessoa-idosa',
+      category: 'Direitos, denúncias e lazer',
+      icon: Icons.gavel_outlined),
+  TrustedSite(
+      name: 'Estatuto da Pessoa Idosa',
+      description:
+          'Texto oficial da lei que garante os direitos de quem tem 60 anos ou mais.',
+      url: 'https://www.gov.br/participamaisbrasil/blob/baixar/71910',
+      category: 'Direitos, denúncias e lazer',
+      icon: Icons.menu_book),
+  TrustedSite(
+      name: 'Voa Brasil',
+      description:
+          'Passagens aéreas de até R\$ 200 por trecho para aposentados do INSS. Exige conta gov.br nível prata ou ouro.',
+      url: 'https://www.gov.br/voabrasil',
+      category: 'Direitos, denúncias e lazer',
+      icon: Icons.flight_outlined),
+  TrustedSite(
+      name: 'Fala.BR: ouvidoria do governo',
+      description:
+          'Registre reclamações, sugestões ou denúncias sobre serviços públicos federais.',
+      url: 'https://falabr.cgu.gov.br',
+      category: 'Direitos, denúncias e lazer',
+      icon: Icons.record_voice_over_outlined),
+  TrustedSite(
+      name: 'Portal gov.br',
+      description:
+          'Entrada para todos os serviços do governo e para a sua conta gov.br.',
+      url: 'https://www.gov.br',
+      category: 'Direitos, denúncias e lazer',
+      icon: Icons.account_balance_outlined),
+  TrustedSite(
+      name: 'Amazon Brasil',
+      description:
+          'Loja online. Em caso de problema, use a Central de Atendimento dentro do site.',
+      url: 'https://www.amazon.com.br',
+      category: 'Compras e transporte por aplicativo',
+      icon: Icons.shopping_bag_outlined),
+  TrustedSite(
+      name: 'Mercado Livre',
+      description:
+          'Loja online e marketplace. Compre de vendedores bem avaliados.',
+      url: 'https://www.mercadolivre.com.br',
+      category: 'Compras e transporte por aplicativo',
+      icon: Icons.storefront_outlined),
+  TrustedSite(
+      name: 'Uber: central de ajuda',
+      description: 'Ajuda para corridas, pagamentos e segurança.',
+      url: 'https://help.uber.com/pt-BR',
+      category: 'Compras e transporte por aplicativo',
+      icon: Icons.local_taxi_outlined),
+  TrustedSite(
+      name: '99 (inclui 99Pop)',
+      description: 'Aplicativo de corridas.',
+      url: 'https://99app.com',
+      category: 'Compras e transporte por aplicativo',
+      icon: Icons.directions_car_outlined),
+  TrustedSite(
+      name: '99: central de ajuda',
+      description: 'Atendimento 24 horas, todos os dias.',
+      url: 'https://99app.com/ajuda/',
+      category: 'Compras e transporte por aplicativo',
+      icon: Icons.support_agent_outlined),
+  TrustedSite(
+      name: 'Agência Brasil',
+      description: 'Agência pública de notícias (EBC).',
+      url: 'https://agenciabrasil.ebc.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper_outlined),
+  TrustedSite(
+      name: 'Agência Gov',
+      description: 'Notícias do Governo Federal.',
+      url: 'https://agenciagov.ebc.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.account_balance_outlined),
+  TrustedSite(
+      name: 'Senado Notícias',
+      description: 'Notícias do Senado Federal.',
+      url: 'https://www12.senado.leg.br/noticias',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.account_balance_outlined),
+  TrustedSite(
+      name: 'Agência Câmara',
+      description: 'Notícias da Câmara dos Deputados.',
+      url: 'https://www.camara.leg.br/noticias',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.account_balance_outlined),
+  TrustedSite(
+      name: 'g1',
+      description: 'Portal de notícias do Grupo Globo.',
+      url: 'https://g1.globo.com',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'Folha de S.Paulo',
+      description: 'Jornal.',
+      url: 'https://www.folha.uol.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'O Estado de S. Paulo',
+      description: 'Jornal.',
+      url: 'https://www.estadao.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'O Globo',
+      description: 'Jornal.',
+      url: 'https://oglobo.globo.com',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'CNN Brasil',
+      description: 'Canal e portal de notícias.',
+      url: 'https://www.cnnbrasil.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'Correio Braziliense',
+      description: 'Jornal de Brasília.',
+      url: 'https://www.correiobraziliense.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
+  TrustedSite(
+      name: 'O Povo',
+      description: 'Jornal do Ceará.',
+      url: 'https://www.opovo.com.br',
+      category: 'Notícias de fontes oficiais e conhecidas',
+      icon: Icons.newspaper),
 ];
 
 class HomePage extends StatefulWidget {
   final bool isDarkMode;
   final bool isHighContrast;
+  final double textScaleFactor;
+  final ValueChanged<double> onTextScaleChanged;
   final VoidCallback onToggleDarkMode;
   final VoidCallback onToggleHighContrast;
 
@@ -565,6 +794,8 @@ class HomePage extends StatefulWidget {
     super.key,
     required this.isDarkMode,
     required this.isHighContrast,
+    required this.textScaleFactor,
+    required this.onTextScaleChanged,
     required this.onToggleDarkMode,
     required this.onToggleHighContrast,
   });
@@ -577,10 +808,12 @@ class _HomePageState extends State<HomePage> {
   int selectedTab = 0;
   String selectedCategory = 'Todos';
   String searchText = '';
+  bool showWelcomeMessage = true;
   final Set<String> favorites = {};
 
   List<String> get categories {
-    final available = documents.map((doc) => doc.category).toSet().toList()..sort();
+    final available = documents.map((doc) => doc.category).toSet().toList()
+      ..sort();
     return ['Todos', ...available];
   }
 
@@ -621,13 +854,15 @@ class _HomePageState extends State<HomePage> {
       );
       if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível abrir este endereço.')),
+          const SnackBar(
+              content: Text('Não foi possível abrir este endereço.')),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível abrir este endereço.')),
+          const SnackBar(
+              content: Text('Não foi possível abrir este endereço.')),
         );
       }
     }
@@ -645,7 +880,7 @@ class _HomePageState extends State<HomePage> {
             '3. Toque em “Ver guia” para abrir o PDF correspondente.\n\n'
             '4. Toque no coração para adicionar um guia aos favoritos.\n\n'
             '5. Na aba “Sites oficiais”, abra os endereços confiáveis.\n\n'
-            '6. Utilize os botões no topo para alterar a aparência do aplicativo.',
+            '6. Abra o menu de acessibilidade no topo para ajustar o tema, o contraste e o tamanho das letras.',
             style: TextStyle(fontSize: 16, height: 1.5),
           ),
         ),
@@ -665,10 +900,10 @@ class _HomePageState extends State<HomePage> {
     final isOfficialSites = selectedTab == 3;
     final isLibrary = selectedTab == 1;
     final highContrast = widget.isHighContrast;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = highContrast ? Colors.yellow : const Color(0xFF176B60);
-    final textColor = highContrast
-        ? Colors.white
-        : Theme.of(context).colorScheme.onSurface;
+    final textColor =
+        highContrast ? Colors.white : Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       appBar: AppBar(
@@ -698,22 +933,84 @@ class _HomePageState extends State<HomePage> {
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Amparo', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                Text('Amparo',
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                 Text('Conhecimento e cuidado', style: TextStyle(fontSize: 13)),
               ],
             ),
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: widget.isDarkMode ? 'Ativar tema claro' : 'Ativar tema escuro',
-            onPressed: widget.onToggleDarkMode,
-            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode_outlined, size: 25),
-          ),
-          IconButton(
-            tooltip: widget.isHighContrast ? 'Desativar alto contraste' : 'Ativar alto contraste',
-            onPressed: widget.onToggleHighContrast,
-            icon: const Icon(Icons.contrast, size: 26),
+          PopupMenuButton<String>(
+            tooltip: 'Acessibilidade e aparência',
+            icon: const Icon(Icons.accessibility_new, size: 28),
+            onSelected: (option) {
+              if (option == 'dark') {
+                widget.onToggleDarkMode();
+              } else if (option == 'contrast') {
+                widget.onToggleHighContrast();
+              } else if (option == 'text_increase') {
+                widget.onTextScaleChanged(
+                  (widget.textScaleFactor + 0.1).clamp(1.0, 1.6).toDouble(),
+                );
+              } else if (option == 'text_decrease') {
+                widget.onTextScaleChanged(
+                  (widget.textScaleFactor - 0.1).clamp(1.0, 1.6).toDouble(),
+                );
+              } else if (option == 'text_reset') {
+                widget.onTextScaleChanged(1.0);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'dark',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                      widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
+                  title: Text(widget.isDarkMode
+                      ? 'Desativar tema escuro'
+                      : 'Ativar tema escuro'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'contrast',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.contrast),
+                  title: Text(widget.isHighContrast
+                      ? 'Desativar alto contraste'
+                      : 'Ativar alto contraste'),
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem<String>(
+                value: 'text_increase',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.text_increase),
+                  title: const Text('Aumentar letras'),
+                  trailing: Text('${(widget.textScaleFactor * 100).round()}%'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'text_decrease',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.text_decrease),
+                  title: Text('Diminuir letras'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'text_reset',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.format_size),
+                  title: Text('Tamanho padrão'),
+                ),
+              ),
+            ],
           ),
           IconButton(
             tooltip: 'Ajuda',
@@ -726,7 +1023,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Column(
           children: [
-            if (selectedTab == 0) _buildWelcome(),
+            if (selectedTab == 0 && showWelcomeMessage) _buildWelcome(),
             if (!isOfficialSites)
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
@@ -738,13 +1035,18 @@ class _HomePageState extends State<HomePage> {
                     hintStyle: const TextStyle(fontSize: 17),
                     prefixIcon: const Icon(Icons.search, size: 28),
                     filled: true,
-                    fillColor: highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
+                    fillColor: highContrast
+                        ? Colors.black
+                        : Theme.of(context).colorScheme.surface,
                     contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide(
-                        color: highContrast ? Colors.white : const Color(0xFFD8E3DE),
+                        color: highContrast
+                            ? Colors.white
+                            : const Color(0xFFD8E3DE),
                       ),
                     ),
                   ),
@@ -754,10 +1056,12 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 height: 58,
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
                   scrollDirection: Axis.horizontal,
                   itemCount: categories.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final category = categories[index];
                     final selected = selectedCategory == category;
@@ -766,20 +1070,31 @@ class _HomePageState extends State<HomePage> {
                         category,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                          color: highContrast ? Colors.white : null,
+                          fontWeight:
+                              selected ? FontWeight.bold : FontWeight.normal,
+                          color: highContrast
+                              ? (selected ? Colors.black : Colors.white)
+                              : selected && isDarkTheme
+                                  ? Colors.black
+                                  : null,
                         ),
                       ),
                       selected: selected,
-                      onSelected: (value) => setState(() => selectedCategory = category),
-                      selectedColor: highContrast ? Colors.yellow.shade900 : const Color(0xFFD1E9DF),
-                      backgroundColor: highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
+                      onSelected: (value) =>
+                          setState(() => selectedCategory = category),
+                      selectedColor: highContrast
+                          ? Colors.yellow
+                          : const Color(0xFFD1E9DF),
+                      backgroundColor: highContrast
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.surface,
                       side: BorderSide(
                         color: highContrast
-                            ? Colors.white
+                            ? (selected ? Colors.yellow : Colors.white)
                             : selected
                                 ? const Color(0xFF176B60)
                                 : const Color(0xFFD8E3DE),
+                        width: selected ? 2 : 1,
                       ),
                       showCheckmark: false,
                     );
@@ -794,22 +1109,35 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   children: [
                     Icon(
-                      isFavorites ? Icons.favorite : isLibrary ? Icons.menu_book : Icons.folder_open,
+                      isFavorites
+                          ? Icons.favorite
+                          : isLibrary
+                              ? Icons.menu_book
+                              : Icons.folder_open,
                       color: primaryColor,
                       size: 27,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        isFavorites ? 'Meus favoritos' : isLibrary ? 'Biblioteca de guias' : 'Aprenda a usar a tecnologia',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+                        isFavorites
+                            ? 'Meus favoritos'
+                            : isLibrary
+                                ? 'Biblioteca de guias'
+                                : 'Aprenda a usar a tecnologia',
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: textColor),
                       ),
                     ),
                     Text(
                       '${filteredDocuments.length} itens',
                       style: TextStyle(
                         fontSize: 14,
-                        color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: highContrast
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -821,7 +1149,8 @@ class _HomePageState extends State<HomePage> {
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                         itemCount: filteredDocuments.length,
-                        itemBuilder: (context, index) => _buildDocumentCard(filteredDocuments[index]),
+                        itemBuilder: (context, index) =>
+                            _buildDocumentCard(filteredDocuments[index]),
                       ),
               ),
             ],
@@ -837,13 +1166,27 @@ class _HomePageState extends State<HomePage> {
             searchText = '';
           });
         },
-        backgroundColor: highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
-        indicatorColor: highContrast ? Colors.yellow.shade900 : const Color(0xFFD1E9DF),
+        backgroundColor:
+            highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
+        indicatorColor:
+            highContrast ? Colors.yellow.shade900 : const Color(0xFFD1E9DF),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined, size: 27), selectedIcon: Icon(Icons.home, size: 27), label: 'Início'),
-          NavigationDestination(icon: Icon(Icons.library_books_outlined, size: 27), selectedIcon: Icon(Icons.library_books, size: 27), label: 'Biblioteca'),
-          NavigationDestination(icon: Icon(Icons.favorite_border, size: 27), selectedIcon: Icon(Icons.favorite, size: 27), label: 'Favoritos'),
-          NavigationDestination(icon: Icon(Icons.verified_user_outlined, size: 27), selectedIcon: Icon(Icons.verified_user, size: 27), label: 'Sites oficiais'),
+          NavigationDestination(
+              icon: Icon(Icons.home_outlined, size: 27),
+              selectedIcon: Icon(Icons.home, size: 27),
+              label: 'Início'),
+          NavigationDestination(
+              icon: Icon(Icons.library_books_outlined, size: 27),
+              selectedIcon: Icon(Icons.library_books, size: 27),
+              label: 'Biblioteca'),
+          NavigationDestination(
+              icon: Icon(Icons.favorite_border, size: 27),
+              selectedIcon: Icon(Icons.favorite, size: 27),
+              label: 'Favoritos'),
+          NavigationDestination(
+              icon: Icon(Icons.verified_user_outlined, size: 27),
+              selectedIcon: Icon(Icons.verified_user, size: 27),
+              label: 'Sites oficiais'),
         ],
       ),
     );
@@ -898,8 +1241,21 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Icon(Icons.phone_android_rounded, size: 60, color: highContrast ? Colors.yellow : const Color(0xFF176B60)),
+          const SizedBox(width: 4),
+          Icon(Icons.phone_android_rounded,
+              size: 42,
+              color: highContrast ? Colors.yellow : const Color(0xFF176B60)),
+          IconButton(
+            tooltip: 'Fechar mensagem',
+            visualDensity: VisualDensity.compact,
+            onPressed: () => setState(() => showWelcomeMessage = false),
+            icon: Icon(
+              Icons.close,
+              color: highContrast
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -907,7 +1263,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildOfficialSites() {
     final highContrast = widget.isHighContrast;
-    final categories = trustedSites.map((site) => site.category).toSet().toList();
+    final categories =
+        trustedSites.map((site) => site.category).toSet().toList();
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -917,7 +1274,9 @@ class _HomePageState extends State<HomePage> {
           decoration: BoxDecoration(
             color: highContrast ? Colors.black : const Color(0xFFFFF4DF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: highContrast ? Colors.white : const Color(0xFFE6C98F), width: highContrast ? 2 : 1),
+            border: Border.all(
+                color: highContrast ? Colors.white : const Color(0xFFE6C98F),
+                width: highContrast ? 2 : 1),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -935,8 +1294,13 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 18),
         Text(
-          'Links confiáveis para pessoas idosas',
-          style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: highContrast ? Colors.yellow : Theme.of(context).colorScheme.onSurface),
+          'Links úteis e serviços confiáveis',
+          style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: highContrast
+                  ? Colors.yellow
+                  : Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 12),
         for (final category in categories) ...[
@@ -944,28 +1308,48 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
             child: Text(
               category,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: highContrast ? Colors.yellow : const Color(0xFF176B60)),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      highContrast ? Colors.yellow : const Color(0xFF176B60)),
             ),
           ),
-          for (final site in trustedSites.where((item) => item.category == category))
+          for (final site
+              in trustedSites.where((item) => item.category == category))
             Card(
               margin: const EdgeInsets.only(bottom: 10),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: Icon(site.icon, size: 32, color: highContrast ? Colors.yellow : Theme.of(context).colorScheme.primary),
-                title: Text(site.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: Icon(site.icon,
+                    size: 32,
+                    color: highContrast
+                        ? Colors.yellow
+                        : Theme.of(context).colorScheme.primary),
+                title: Text(site.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 17)),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(site.description, style: const TextStyle(fontSize: 14, height: 1.35)),
+                      Text(site.description,
+                          style: const TextStyle(fontSize: 14, height: 1.35)),
                       if (site.phone != null) ...[
                         const SizedBox(height: 5),
-                        Text('Telefone: ${site.phone}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Telefone: ${site.phone}',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
                       ],
                       const SizedBox(height: 5),
-                      Text(site.url, style: TextStyle(fontSize: 12, color: highContrast ? Colors.white70 : const Color(0xFF176B60))),
+                      Text(site.url,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: highContrast
+                                  ? Colors.white70
+                                  : const Color(0xFF176B60))),
                     ],
                   ),
                 ),
@@ -977,7 +1361,12 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 12),
         Text(
           'Nota: endereços e regras de programas podem mudar. Se um link não abrir, procure o nome do serviço no portal gov.br. Os links de Amazon, 99 e dos jornais são os endereços conhecidos de cada empresa e devem ser conferidos ao abrir.',
-          style: TextStyle(fontSize: 13, height: 1.4, color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
+          style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: highContrast
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -987,16 +1376,20 @@ class _HomePageState extends State<HomePage> {
     final isFavorite = favorites.contains(doc.title);
     final highContrast = widget.isHighContrast;
     final primaryColor = highContrast ? Colors.yellow : const Color(0xFF176B60);
-    final textColor = highContrast ? Colors.white : Theme.of(context).colorScheme.onSurface;
+    final textColor =
+        highContrast ? Colors.white : Theme.of(context).colorScheme.onSurface;
 
     return Card(
-      color: highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
+      color:
+          highContrast ? Colors.black : Theme.of(context).colorScheme.surface,
       elevation: highContrast ? 0 : 1,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(17),
         side: BorderSide(
-          color: highContrast ? Colors.white : Theme.of(context).colorScheme.outlineVariant,
+          color: highContrast
+              ? Colors.white
+              : Theme.of(context).colorScheme.outlineVariant,
           width: highContrast ? 2 : 1,
         ),
       ),
@@ -1012,9 +1405,12 @@ class _HomePageState extends State<HomePage> {
                   width: 58,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: highContrast ? Colors.black : Theme.of(context).colorScheme.surfaceContainerLow,
+                    color: highContrast
+                        ? Colors.black
+                        : Theme.of(context).colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(13),
-                    border: highContrast ? Border.all(color: Colors.white) : null,
+                    border:
+                        highContrast ? Border.all(color: Colors.white) : null,
                   ),
                   child: Icon(doc.icon, color: primaryColor, size: 32),
                 ),
@@ -1023,14 +1419,20 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(doc.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+                      Text(doc.title,
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor)),
                       const SizedBox(height: 6),
                       Text(
                         doc.description,
                         style: TextStyle(
                           fontSize: 15,
                           height: 1.35,
-                          color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: highContrast
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1041,23 +1443,44 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.picture_as_pdf_outlined, size: 18, color: highContrast ? Colors.yellow : const Color(0xFF176B60)),
+                              Icon(Icons.picture_as_pdf_outlined,
+                                  size: 18,
+                                  color: highContrast
+                                      ? Colors.yellow
+                                      : const Color(0xFF176B60)),
                               const SizedBox(width: 4),
-                              Text('Documento PDF', style: TextStyle(fontSize: 13, color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant)),
+                              Text('Documento PDF',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: highContrast
+                                          ? Colors.white
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant)),
                             ],
                           ),
-                          Text(doc.category, style: TextStyle(fontSize: 13, color: primaryColor, fontWeight: FontWeight.w600)),
+                          Text(doc.category,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  tooltip: isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
+                  tooltip: isFavorite
+                      ? 'Remover dos favoritos'
+                      : 'Adicionar aos favoritos',
                   onPressed: () => toggleFavorite(doc),
                   icon: Icon(
                     isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.redAccent : highContrast ? Colors.white : Colors.blueGrey,
+                    color: isFavorite
+                        ? Colors.redAccent
+                        : highContrast
+                            ? Colors.white
+                            : Colors.blueGrey,
                     size: 27,
                   ),
                 ),
@@ -1070,11 +1493,14 @@ class _HomePageState extends State<HomePage> {
               child: FilledButton.icon(
                 onPressed: () => openDocument(doc),
                 icon: const Icon(Icons.menu_book, size: 22),
-                label: const Text('Ver guia', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                label: const Text('Ver guia',
+                    style:
+                        TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
                 style: FilledButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: highContrast ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -1092,18 +1518,30 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 68, color: highContrast ? Colors.yellow : const Color(0xFF8AA79A)),
+            Icon(Icons.search_off,
+                size: 68,
+                color: highContrast ? Colors.yellow : const Color(0xFF8AA79A)),
             const SizedBox(height: 16),
             Text(
               'Nenhum material encontrado',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurface),
+              style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                  color: highContrast
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(height: 8),
             Text(
               'Tente pesquisar outro termo ou escolha uma categoria diferente.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, height: 1.4, color: highContrast ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                  fontSize: 16,
+                  height: 1.4,
+                  color: highContrast
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             OutlinedButton(
@@ -1111,7 +1549,8 @@ class _HomePageState extends State<HomePage> {
                 searchText = '';
                 selectedCategory = 'Todos';
               }),
-              child: const Text('Limpar filtros', style: TextStyle(fontSize: 16)),
+              child:
+                  const Text('Limpar filtros', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),
@@ -1120,18 +1559,159 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class PdfReaderPage extends StatelessWidget {
+class PdfReaderPage extends StatefulWidget {
   final DigitalGuide guide;
 
   const PdfReaderPage({super.key, required this.guide});
 
   @override
+  State<PdfReaderPage> createState() => _PdfReaderPageState();
+}
+
+class _PdfReaderPageState extends State<PdfReaderPage> {
+  final PdfViewerController _pdfController = PdfViewerController();
+  bool _darkMode = false;
+  bool _highContrast = false;
+
+  void _changeZoom(double amount) {
+    final nextZoom =
+        (_pdfController.zoomLevel + amount).clamp(1.0, 4.0).toDouble();
+    _pdfController.zoomLevel = nextZoom;
+    setState(() {});
+  }
+
+  ColorFilter? get _documentFilter {
+    if (_darkMode) {
+      // Inverte as cores para apresentar uma página escura com texto claro.
+      return const ColorFilter.matrix(<double>[
+        -1,
+        0,
+        0,
+        0,
+        255,
+        0,
+        -1,
+        0,
+        0,
+        255,
+        0,
+        0,
+        -1,
+        0,
+        255,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]);
+    }
+    if (_highContrast) {
+      return const ColorFilter.matrix(<double>[
+        1.7,
+        0,
+        0,
+        0,
+        -90,
+        0,
+        1.7,
+        0,
+        0,
+        -90,
+        0,
+        0,
+        1.7,
+        0,
+        -90,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]);
+    }
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final zoomPercent = (_pdfController.zoomLevel * 100).round();
     return Scaffold(
+      backgroundColor: _darkMode || _highContrast ? Colors.black : null,
       appBar: AppBar(
-        title: Text(guide.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+        backgroundColor: _darkMode || _highContrast ? Colors.black : null,
+        foregroundColor:
+            _highContrast ? Colors.yellow : (_darkMode ? Colors.white : null),
+        title: Text(widget.guide.title,
+            maxLines: 2, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            tooltip: 'Diminuir zoom',
+            onPressed: () => _changeZoom(-0.25),
+            icon: const Icon(Icons.zoom_out),
+          ),
+          Center(
+            child: Text(
+              '$zoomPercent%',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Aumentar zoom',
+            onPressed: () => _changeZoom(0.25),
+            icon: const Icon(Icons.zoom_in),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Aparência do PDF',
+            icon: const Icon(Icons.tune),
+            onSelected: (value) {
+              setState(() {
+                if (value == 'dark') {
+                  _darkMode = !_darkMode;
+                  if (_darkMode) _highContrast = false;
+                } else if (value == 'contrast') {
+                  _highContrast = !_highContrast;
+                  if (_highContrast) _darkMode = false;
+                }
+              });
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'dark',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(_darkMode ? Icons.light_mode : Icons.dark_mode),
+                  title: Text(_darkMode
+                      ? 'Desativar modo escuro'
+                      : 'Ativar modo escuro'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'contrast',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.contrast),
+                  title: Text(_highContrast
+                      ? 'Desativar alto contraste'
+                      : 'Ativar alto contraste'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      body: SfPdfViewer.asset('assets/pdfs/${guide.fileName}'),
+      body: _documentFilter == null
+          ? SfPdfViewer.asset(
+              'assets/pdfs/${widget.guide.fileName}',
+              controller: _pdfController,
+            )
+          : ColorFiltered(
+              colorFilter: _documentFilter!,
+              child: SfPdfViewer.asset(
+                'assets/pdfs/${widget.guide.fileName}',
+                controller: _pdfController,
+              ),
+            ),
     );
   }
 }
